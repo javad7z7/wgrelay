@@ -1,0 +1,49 @@
+name: Release
+
+# Build macOS + Windows artifacts and publish them to a GitHub Release.
+# Trigger by pushing a version tag, e.g.:
+#   git tag v0.2.0 && git push origin v0.2.0
+# The tag should match the "version" in package.json.
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write # allow GITHUB_TOKEN to create the release & upload assets
+
+jobs:
+  release:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.23"
+          cache-dependency-path: sidecar/go.sum
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Cross-compiles the Go sidecar (universal binary on macOS, .exe on
+      # Windows) and then runs electron-builder with --publish always, which
+      # uploads the installers and latest*.yml auto-update metadata to a draft
+      # GitHub Release named from package.json "version".
+      - name: Build and publish
+        run: npm run release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # No code-signing certs: stop electron-builder from trying to sign
+          # with a (nonexistent) keychain identity on macOS runners.
+          CSC_IDENTITY_AUTO_DISCOVERY: false
