@@ -152,6 +152,7 @@ function createWindow() {
     minWidth: 460,
     minHeight: 600,
     title: "WgRelay",
+    show: false,
     icon: path.join(__dirname, "renderer", "icon-256.png"),
     backgroundColor: "#0c0f0d",
     webPreferences: {
@@ -161,6 +162,7 @@ function createWindow() {
     },
   });
   win.setMenuBarVisibility(false);
+  win.once("ready-to-show", () => win.show());
   win.loadFile(path.join(__dirname, "renderer", "index.html"));
 }
 

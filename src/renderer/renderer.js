@@ -1,4 +1,5 @@
 const $ = (id) => document.getElementById(id);
+const splashStartedAt = performance.now();
 
 const fields = {
   configPath: $("configPath"),
@@ -83,13 +84,18 @@ window.api.onLog((line) => appendLog(line));
 
 // ---- init -------------------------------------------------------------------
 (async () => {
-  const s = await window.api.getSettings();
-  fields.configPath.value = s.configPath || "";
-  fields.socks.value = s.socks || "127.0.0.1:1080";
-  fields.http.value = s.http || "127.0.0.1:8080";
-  fields.user.value = s.user || "";
-  fields.pass.value = s.pass || "";
-  fields.dns.value = s.dns || "";
-  setState((await window.api.isRunning()) ? "connected" : "disconnected");
-  $("appVersion").textContent = "v" + (await window.api.getVersion());
+  try {
+    const s = await window.api.getSettings();
+    fields.configPath.value = s.configPath || "";
+    fields.socks.value = s.socks || "127.0.0.1:1080";
+    fields.http.value = s.http || "127.0.0.1:8080";
+    fields.user.value = s.user || "";
+    fields.pass.value = s.pass || "";
+    fields.dns.value = s.dns || "";
+    setState((await window.api.isRunning()) ? "connected" : "disconnected");
+    $("appVersion").textContent = "v" + (await window.api.getVersion());
+  } finally {
+    const remaining = Math.max(0, 900 - (performance.now() - splashStartedAt));
+    setTimeout(() => $("splash").classList.add("is-hidden"), remaining);
+  }
 })();
