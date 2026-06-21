@@ -1,0 +1,13 @@
+node_modules/
+release/
+dist/
+
+# built Go sidecars (produced by scripts/build-sidecar.js)
+resources/mac/wgrelay
+resources/win/wgrelay.exe
+resources/linux/wgrelay
+sidecar/wgrelay
+sidecar/wgrelay-*
+
+.DS_Store
+*.log

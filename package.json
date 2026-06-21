@@ -1,0 +1,99 @@
+{
+  "name": "wgrelay",
+  "productName": "WgRelay",
+  "version": "0.1.0",
+  "description": "Userspace WireGuard exposed as a local SOCKS5 / HTTP proxy, with a cross-platform GUI.",
+  "license": "MIT",
+  "author": "javad7z7",
+  "main": "src/main.js",
+  "scripts": {
+    "build:sidecar": "node scripts/build-sidecar.js",
+    "build:icons": "node scripts/build-icons.js",
+    "start": "npm run build:sidecar && electron .",
+    "dist": "npm run build:sidecar && electron-builder",
+    "dist:mac": "npm run build:sidecar && electron-builder --mac",
+    "dist:win": "npm run build:sidecar && electron-builder --win",
+    "release": "npm run build:sidecar && electron-builder --publish always"
+  },
+  "devDependencies": {
+    "electron": "^31.0.0",
+    "electron-builder": "^24.13.3",
+    "png-to-ico": "^2.1.8"
+  },
+  "build": {
+    "appId": "com.javad7z7.wgrelay",
+    "productName": "WgRelay",
+    "directories": {
+      "output": "release",
+      "buildResources": "build"
+    },
+    "files": [
+      "src/**/*",
+      "!**/*.map"
+    ],
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "javad7z7",
+        "repo": "wgrelay"
+      }
+    ],
+    "mac": {
+      "category": "public.app-category.utilities",
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "arm64",
+            "x64"
+          ]
+        },
+        {
+          "target": "zip",
+          "arch": [
+            "arm64",
+            "x64"
+          ]
+        }
+      ],
+      "extraResources": [
+        {
+          "from": "resources/mac/",
+          "to": "bin",
+          "filter": [
+            "**/*"
+          ]
+        }
+      ]
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "extraResources": [
+        {
+          "from": "resources/win/",
+          "to": "bin",
+          "filter": [
+            "**/*"
+          ]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
+  }
+}

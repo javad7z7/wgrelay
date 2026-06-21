@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self';"
+    />
+    <title>WgRelay</title>
+    <link rel="icon" type="image/png" sizes="32x32" href="icon-32.png" />
+    <link rel="icon" type="image/png" sizes="64x64" href="icon-64.png" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="grain"></div>
+
+    <header class="topbar">
+      <div class="brand">
+        <img class="logo" src="icon-64.png" alt="" />
+        <span class="brand-name"
+          >WG<span class="brand-accent">RELAY</span>
+          <span id="appVersion"></span>
+        </span>
+      </div>
+      <div class="status" id="status">
+        <span class="dot" id="dot"></span>
+        <span class="status-text" id="statusText">disconnected</span>
+      </div>
+    </header>
+
+    <main>
+      <section class="panel">
+        <label class="field">
+          <span class="field-label">wireguard config</span>
+          <div class="file-row">
+            <input
+              type="text"
+              id="configPath"
+              placeholder="select a .conf file…"
+              readonly
+            />
+            <button class="btn ghost" id="browse">browse</button>
+          </div>
+        </label>
+
+        <div class="grid-2">
+          <label class="field">
+            <span class="field-label">socks5 listen</span>
+            <input type="text" id="socks" placeholder="127.0.0.1:1080" />
+          </label>
+          <label class="field">
+            <span class="field-label">http listen</span>
+            <input type="text" id="http" placeholder="127.0.0.1:8080" />
+          </label>
+        </div>
+
+        <details class="advanced">
+          <summary>advanced</summary>
+          <div class="grid-2">
+            <label class="field">
+              <span class="field-label">proxy user</span>
+              <input
+                type="text"
+                id="user"
+                placeholder="optional"
+                autocomplete="off"
+              />
+            </label>
+            <label class="field">
+              <span class="field-label">proxy pass</span>
+              <input
+                type="password"
+                id="pass"
+                placeholder="optional"
+                autocomplete="off"
+              />
+            </label>
+          </div>
+          <label class="field">
+            <span class="field-label">dns override</span>
+            <input
+              type="text"
+              id="dns"
+              placeholder="e.g. 1.1.1.1 (comma-separated)"
+            />
+          </label>
+        </details>
+
+        <button class="btn primary" id="toggle">
+          <span id="toggleLabel">connect</span>
+        </button>
+        <p class="hint" id="hint">
+          Only apps you point at these ports use the VPN. Nothing else changes.
+        </p>
+      </section>
+
+      <section class="console">
+        <div class="console-head">
+          <span>log</span>
+          <button class="btn micro" id="clearLog">clear</button>
+        </div>
+        <pre id="log" class="log"></pre>
+      </section>
+    </main>
+
+    <script src="renderer.js"></script>
+  </body>
+</html>
