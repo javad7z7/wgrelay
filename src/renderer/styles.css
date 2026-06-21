@@ -30,6 +30,69 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+.splash {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: var(--text);
+  background:
+    radial-gradient(circle at 50% 42%, rgba(54, 224, 160, 0.08), transparent 45%),
+    var(--bg);
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 220ms ease, visibility 220ms ease;
+}
+
+.splash.is-hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.splash-logo {
+  width: 96px;
+  height: 96px;
+  display: block;
+  border-radius: 24px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+}
+
+.splash-name {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 3px;
+}
+
+.splash-name span { color: #14b87d; }
+
+.splash-loading {
+  height: 8px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.splash-loading i {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #14b87d;
+  animation: splash-loading 1s ease-in-out infinite;
+}
+
+.splash-loading i:nth-child(2) { animation-delay: 0.15s; }
+.splash-loading i:nth-child(3) { animation-delay: 0.3s; }
+
+@keyframes splash-loading {
+  0%, 60%, 100% { opacity: 0.25; transform: translateY(0); }
+  30% { opacity: 1; transform: translateY(-2px); }
+}
+
 /* faint scanline/grain texture for atmosphere */
 .grain {
   pointer-events: none;
