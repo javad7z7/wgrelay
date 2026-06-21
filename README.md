@@ -9,31 +9,6 @@ else on your machine is untouched. No admin/root, no `utun`/TUN driver, no
 routing-table changes — the tunnel runs entirely in userspace
 (`wireguard-go` + gVisor netstack).
 
-## How it's built
-
-Two independent pieces communicate via a spawned child process and CLI flags —
-**not** a shared library or RPC:
-
-- **Sidecar** (`sidecar/`, Go): the userspace WireGuard tunnel + SOCKS5/HTTP
-  proxy. A single static binary driven entirely by flags (`-config`, `-socks`,
-  `-http`, `-user`, `-pass`, `-dns`, `-verbose`). Knows nothing about Electron.
-- **GUI** (`src/`, Electron): spawns/kills the sidecar, manages the config file
-  and ports, renders status + a live log. Pure HTML/CSS/vanilla JS in the
-  renderer — **no build step, no framework, no bundler**, easy to restyle.
-
-```
-src/main.js            Electron main: spawn/kill sidecar, IPC, settings
-src/preload.js         contextBridge API surface (window.api)
-src/renderer/          index.html · styles.css · renderer.js
-sidecar/*.go           the Go proxy (wireguard.go, socks5.go, httpproxy.go, …)
-scripts/build-sidecar  compiles the Go binary into resources/<plat>/
-scripts/build-icons    generates icon.icns / icon.ico / icon.png in build/
-```
-
-**TCP only** (SOCKS5 CONNECT + HTTP/HTTPS CONNECT/forward). DNS for proxied
-hostnames goes through the tunnel; if the WG config has no `DNS` line, the
-sidecar falls back to `1.1.1.1`.
-
 ## Prerequisites
 
 - [Node.js](https://nodejs.org) 18+
@@ -44,30 +19,6 @@ sidecar falls back to `1.1.1.1`.
 ```sh
 npm install
 npm start        # builds the sidecar for your OS, then launches Electron
-```
-
-`npm start` always runs `scripts/build-sidecar.js` first, which cross-compiles
-with `CGO_ENABLED=0` into `resources/<plat>/`:
-
-- **macOS**: universal binary (arm64 + amd64 merged with `lipo`) → `resources/mac/wgrelay`
-- **Windows**: `resources/win/wgrelay.exe`
-- **Linux**: `resources/linux/wgrelay` (dev convenience only — not a release target)
-
-### Working on the sidecar alone
-
-It's a normal Go module. You can build and run it without Electron:
-
-```sh
-cd sidecar
-go build -o wgrelay .
-./wgrelay -config /path/to/wg.conf -socks 127.0.0.1:1080 -http 127.0.0.1:8080 -verbose
-```
-
-Verify with:
-
-```sh
-curl --socks5-hostname 127.0.0.1:1080 https://ifconfig.me
-curl -x http://127.0.0.1:8080         https://ifconfig.me
 ```
 
 ## Package installers
@@ -113,37 +64,6 @@ security warning on first launch. Clear it once:
   ```
 - **Windows**: on the SmartScreen dialog, click **More info → Run anyway**.
 
-Removing these warnings entirely requires paid certificates — see *Code
-signing* below.
-
-## Code signing (for clean distribution)
-
-- **macOS**: set `CSC_LINK` / `CSC_KEY_PASSWORD` (Developer ID cert) and
-  configure notarization (`APPLE_ID`, `APPLE_APP_SPECIFIC_PASSWORD`,
-  `APPLE_TEAM_ID`) as CI secrets. The bundled Go binary is signed along with
-  the app.
-- **Windows**: set a code-signing cert via `CSC_LINK` / `CSC_KEY_PASSWORD` to
-  avoid SmartScreen warnings.
-
-## App icon
-
-Platform artifacts live in `build/`:
-
-- `build/icon.icns` — macOS bundle icon
-- `build/icon.ico`  — Windows bundle icon
-- `build/icon.png`  — generic fallback (also used for Linux dev builds)
-
-To replace the icon, drop a fresh set of source PNGs into `build/`
-(`icon-16.png`, `-32`, `-64`, `-128`, `-256`, `-512`, `-1024`) and run:
-
-```sh
-npm run build:icons
-```
-
-This regenerates `icon.icns` / `icon.ico` / `icon.png` and refreshes the
-in-app favicon assets in `src/renderer/`. `electron-builder` auto-discovers the
-generated files — no extra config needed.
-
 ## Usage
 
 1. Click **browse** and select a standard WireGuard `.conf`.
@@ -156,8 +76,7 @@ curl -x http://127.0.0.1:8080         https://ifconfig.me
 ```
 
 Settings persist as JSON in Electron's `userData` directory
-(`settings.json`). Stopping the proxy is a hard `child.kill()` of the sidecar —
-safe precisely *because* the userspace tunnel makes no system changes.
+(`settings.json`).
 
 ## Limitations
 
