@@ -1,10 +1,20 @@
-const { app, BrowserWindow, ipcMain, dialog } = require("electron");
+const {
+  app,
+  BrowserWindow,
+  ipcMain,
+  dialog,
+  Menu,
+  nativeImage,
+  Tray,
+} = require("electron");
 const { spawn } = require("child_process");
 const path = require("path");
 const fs = require("fs");
 
 let win = null;
 let child = null; // the running wgrelay sidecar process
+let tray = null;
+let proxyState = "disconnected";
 
 // ---- sidecar binary location -------------------------------------------------
 function platformDir() {
@@ -54,7 +64,67 @@ function send(channel, payload) {
   if (win && !win.isDestroyed()) win.webContents.send(channel, payload);
 }
 function setStatus(state, detail) {
+  proxyState = state;
   send("status", { state, detail: detail || "" });
+  updateTray();
+}
+
+// ---- macOS menu bar ---------------------------------------------------------
+function showWindow() {
+  if (!win || win.isDestroyed()) createWindow();
+  if (win.isMinimized()) win.restore();
+  win.show();
+  win.focus();
+}
+
+function trayIcon() {
+  // Electron can return an empty nativeImage for inline SVGs on macOS.
+  // Use a real PNG asset so the status item is always visible.
+  return nativeImage
+    .createFromPath(path.join(__dirname, "renderer", "icon-32.png"))
+    .resize({ width: 18, height: 18 });
+}
+
+function toggleProxyFromTray() {
+  if (child) {
+    stopProxy();
+    return;
+  }
+
+  const result = startProxy(loadSettings());
+  if (!result.ok) {
+    setStatus("error", result.error);
+    dialog.showErrorBox("WgRelay", result.error);
+  }
+}
+
+function updateTray() {
+  if (!tray) return;
+
+  const active = proxyState === "connected" || proxyState === "connecting";
+  const busy = proxyState === "disconnecting";
+  const status = proxyState[0].toUpperCase() + proxyState.slice(1);
+  tray.setToolTip(`WgRelay - ${status}`);
+  tray.setContextMenu(
+    Menu.buildFromTemplate([
+      { label: `Status: ${status}`, enabled: false },
+      { type: "separator" },
+      {
+        label: active ? "Disconnect" : "Connect",
+        enabled: !busy,
+        click: toggleProxyFromTray,
+      },
+      { label: "Show WgRelay", click: showWindow },
+      { type: "separator" },
+      { label: "Quit WgRelay", click: () => app.quit() },
+    ]),
+  );
+}
+
+function createTray() {
+  if (process.platform !== "darwin" || tray) return;
+  tray = new Tray(trayIcon());
+  updateTray();
 }
 
 // ---- process control ---------------------------------------------------------
@@ -171,6 +241,7 @@ app.whenReady().then(() => {
     app.dock.setIcon(path.join(__dirname, "renderer", "icon-256.png"));
   }
   createWindow();
+  createTray();
 });
 
 app.on("activate", () => {
