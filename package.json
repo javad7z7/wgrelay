@@ -9,11 +9,16 @@
   "scripts": {
     "build:sidecar": "node scripts/build-sidecar.js",
     "build:icons": "node scripts/build-icons.js",
+    "clean:updates": "node scripts/clean-update-artifacts.js",
     "start": "npm run build:sidecar && electron .",
     "dist": "npm run build:sidecar && electron-builder",
     "dist:mac": "npm run build:sidecar && electron-builder --mac",
     "dist:win": "npm run build:sidecar && electron-builder --win",
-    "release": "npm run build:sidecar && electron-builder --publish always"
+    "release": "npm run build:sidecar && electron-builder --publish always",
+    "postdist": "npm run clean:updates",
+    "postdist:mac": "npm run clean:updates",
+    "postdist:win": "npm run clean:updates",
+    "postrelease": "npm run clean:updates"
   },
   "devDependencies": {
     "electron": "^31.0.0",

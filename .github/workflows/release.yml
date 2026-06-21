@@ -47,3 +47,18 @@ jobs:
           # No code-signing certs: stop electron-builder from trying to sign
           # with a (nonexistent) keychain identity on macOS runners.
           CSC_IDENTITY_AUTO_DISCOVERY: false
+
+      # No auto-update yet — strip the .blockmap / latest*.yml assets that
+      # electron-builder uploaded to the draft release.
+      - name: Strip auto-update metadata from release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          assets=$(gh release view "$TAG" --json assets -q '.assets[].name' \
+            | grep -E '\.blockmap$|^latest(-mac|-linux)?\.yml$' || true)
+          for asset in $assets; do
+            echo "deleting $asset"
+            gh release delete-asset "$TAG" "$asset" --yes || true
+          done
