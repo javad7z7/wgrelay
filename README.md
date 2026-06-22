@@ -1,7 +1,3 @@
-<p align="center">
-  <img src="[https://raw.githubusercontent.com/javad7z7/wgrelay/main/build/icon.png](https://i.ibb.co/ZpfGjPWy/icon.png)" alt="WgRelay icon" width="128" height="128">
-</p>
-
 # WgRelay
 
 A cross-platform desktop app (macOS + Windows) that connects to a **WireGuard**
