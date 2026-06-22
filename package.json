@@ -100,5 +100,8 @@
       "oneClick": false,
       "allowToChangeInstallationDirectory": true
     }
+  },
+  "allowScripts": {
+    "electron@31.7.7": true
   }
 }
