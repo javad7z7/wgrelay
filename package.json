@@ -1,7 +1,7 @@
 {
   "name": "wgrelay",
   "productName": "WgRelay",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Userspace WireGuard exposed as a local SOCKS5 / HTTP proxy, with a cross-platform GUI.",
   "license": "MIT",
   "author": "javad7z7",
