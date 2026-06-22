@@ -77,11 +77,13 @@ function showWindow() {
   win.focus();
 }
 
-function trayIcon() {
+function trayIcon(active) {
   // Electron can return an empty nativeImage for inline SVGs on macOS.
-  // Use a real PNG asset so the status item is always visible.
+  // Use real PNG assets so the status item is always visible, swapping between
+  // the active (connected) and idle (disconnected) artwork.
+  const file = active ? "menubar-active.png" : "menubar-idle.png";
   return nativeImage
-    .createFromPath(path.join(__dirname, "renderer", "icon-32.png"))
+    .createFromPath(path.join(__dirname, "renderer", "menubar", file))
     .resize({ width: 18, height: 18 });
 }
 
@@ -104,6 +106,7 @@ function updateTray() {
   const active = proxyState === "connected" || proxyState === "connecting";
   const busy = proxyState === "disconnecting";
   const status = proxyState[0].toUpperCase() + proxyState.slice(1);
+  tray.setImage(trayIcon(active));
   tray.setToolTip(`WgRelay - ${status}`);
   tray.setContextMenu(
     Menu.buildFromTemplate([
@@ -123,7 +126,7 @@ function updateTray() {
 
 function createTray() {
   if (process.platform !== "darwin" || tray) return;
-  tray = new Tray(trayIcon());
+  tray = new Tray(trayIcon(false));
   updateTray();
 }
 
